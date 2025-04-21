@@ -1,67 +1,55 @@
 
-# HACKATHON OPEN DATA 2 - Second Prize: Trip Price Prediction for YASSIR VTC
+# Trip Price Prediction for YASSIR VTC
 
 ## Overview
-This project was developed as part of the **HACKATHON OPEN DATA 2** competition, where it earned second place. The main goal of the project was to predict the prices of trips for **YASSIR VTC**, an Algerian ride-hailing company, based on various factors such as distance, time, and location. Additionally, an **interactive map** was developed to visualize these trips and their associated prices.
+This project focuses on predicting the price of trips for **YASSIR VTC**, a ride-hailing service, based on various features such as trip distance, rider and driver information, and trip status. The model is trained using historical data, and the goal is to predict the **trip_fee** for new trips using machine learning models.
 
 ## Objective
-The core objectives of this project were:
-1. **Data Preprocessing & Feature Engineering**: Clean and prepare the trip data to create meaningful features that would improve model accuracy.
-2. **Predictive Modeling**: Build a machine learning model that predicts trip prices based on the given features.
-3. **Clustering**: Perform clustering analysis to identify patterns in the data, particularly focusing on how trip characteristics group together.
-4. **Interactive Data Visualization**: Develop an interactive map to visualize the trip routes and prices.
+The objective of this project is to develop a machine learning model that can predict the price of a trip for YASSIR VTC. The predictions are based on features such as the **pickup city**, **destination city**, **trip distance**, **rider and driver ratings**, **discount usage**, and **trip status**.
 
 ## Approach
 
-### 1. Data Exploration & Preprocessing
-The dataset contains several features such as trip distance, time of day, and vehicle type. Data preprocessing steps involved:
-- Handling missing values using imputation techniques.
-- Feature extraction from timestamps (e.g., day of the week, hour of day).
-- Encoding categorical variables (e.g., vehicle type, location) using one-hot encoding.
-- Scaling numerical features for model consistency.
+1. **Data Preprocessing**:
+   - Data cleaning, including handling missing values and encoding categorical variables.
+   - Feature engineering, such as extracting date-related features (e.g., day, month, and hour) from the `request_date`, `accepted_date`, and `started_date`.
+   - Transformation of continuous variables, such as **trip_distance** and **driver2rider_distance**, to optimize model performance.
 
-### 2. Feature Engineering
-Key features engineered include:
-- **Time-related Features**: Extracted the time of day, day of the week, and month to help capture patterns based on temporal factors.
-- **Trip Distance & Duration**: Distance and duration of each trip were used as key predictors of price.
-- **Geospatial Features**: Geolocation of the trip’s start and end points were incorporated into the analysis to account for different pricing in various locations.
+2. **Model Development**:
+   - A machine learning model is trained to predict **trip_fee** using features from the training dataset.
+   - Several models, such as **Linear Regression**, **Random Forest**, and **Gradient Boosting**, can be used to determine the best-performing model.
 
-### 3. Machine Learning Model Development
-We implemented several machine learning models:
-- **Linear Regression**: As a baseline to predict continuous trip prices.
-- **Random Forest Regressor**: To capture non-linear relationships between features and the price.
-- **Gradient Boosting**: For more complex and accurate predictions.
-The models were evaluated based on **Mean Absolute Error (MAE)** and **Root Mean Squared Error (RMSE)**.
+3. **Evaluation**:
+   - The model is evaluated using **Mean Absolute Error (MAE)** or **Root Mean Squared Error (RMSE)** to assess prediction accuracy.
 
-### 4. Clustering Analysis
-Clustering was performed on features such as trip distance, duration, and price using **K-Means Clustering**. This helped identify different types of trips that share similar characteristics (e.g., short trips vs long trips) and allowed for the refinement of prediction models based on trip clusters.
+4. **Submission**:
+   - The model's predictions for the test set are submitted using the format specified in the **sample_submission.csv** file.
 
-### 5. Interactive Map
-An interactive map was developed using **Folium** to visualize the trips based on their starting and ending locations. This visualization helps stakeholders better understand the geographical distribution of trips and associated prices.
+## Dataset Description
 
-  
-### Key Columns
-- **trip_fee**: Target variable (trip price).
-- **pickup_location** / **dropoff_location**: Geographical features indicating the start and end of a trip.
-- **distance**: Trip length in kilometers.
-- **time_of_day**: Derived from timestamps for temporal analysis.
-- **vehicle_type**: Type of vehicle used for the trip.
-- **duration**: Duration of the trip in minutes.
+### `train.csv`
+The training data includes various features of the trips such as:
+- **id**: Unique identifier for each trip.
+- **request_date**: Date and time when the trip was requested.
+- **pickup_city**: City where the trip was requested.
+- **destination_city**: City where the trip will end.
+- **trip_distance**: Distance of the trip (in meters).
+- **driver2rider_distance**: Distance between the driver and rider (in meters).
+- **used_discount**: Whether a discount was used (1 if used, 0 otherwise).
+- **trip_status**: The status of the trip (e.g., **FINISHED**, **NOT_FINISHED**).
+- **trip_fee**: The actual price of the trip (target variable).
+
+### `test.csv`
+The test data includes the same features as the training data, except the **trip_fee**. This file will be used to make predictions that will be evaluated based on accuracy.
+
+### `sample_submission.csv`
+This file shows the expected format for submitting the predictions:
+- **id**: The same **id** from the test set.
+- **trip_fee**: The predicted price for the trip.
 
 ## Files in the Repository
-
-- **clustering.ipynb**: Jupyter notebook containing the clustering analysis using **K-Means**. It includes feature engineering for clustering, such as trip distance, duration, and price.
-- **highcharter.Rmd**: RMarkdown file for generating high-quality visualizations, including the interactive map showing trip locations and prices.
-- **kaggle.ipynb**: Jupyter notebook that focuses on training and evaluating machine learning models (Linear Regression, Random Forest, and Gradient Boosting) for predicting trip prices.
-- **KPI.Rmd**: RMarkdown file that defines and calculates key performance indicators (KPIs), such as MAE, RMSE, and model comparison.
-- **yassir.Rmd**: RMarkdown file containing the results and detailed analysis, along with the final presentation of the model’s effectiveness.
-
-## Key Performance Indicators (KPIs)
-
-The performance of the model was evaluated using the following metrics:
-- **Mean Absolute Error (MAE)**: Measures the average magnitude of errors in the predictions, providing a direct understanding of prediction accuracy.
-- **Root Mean Squared Error (RMSE)**: Penalizes large errors more than MAE, giving a sense of how well the model generalizes.
-- **Model Comparison**: A comparison of model performances across different algorithms to determine the best model for predicting trip prices.
+- **train.csv**: The training dataset containing historical trip information.
+- **test.csv**: The test dataset for which predictions need to be made.
+- **sample_submission.csv**: The format for submitting predictions.
 
 ## How to Run the Project
 
@@ -76,27 +64,18 @@ Install required Python libraries:
 pip install -r requirements.txt
 ```
 
-Install required R packages:
-```R
-install.packages("highcharter")
-install.packages("folium")
-install.packages("lubridate")
-```
+### 3. Preprocess the Data:
+Run the notebook or script to preprocess the data by handling missing values, encoding categorical variables, and creating new features.
 
-### 3. Run Jupyter Notebooks:
-Open the notebooks using Jupyter Notebook:
-```bash
-jupyter notebook
-```
-Then, run the notebooks `clustering.ipynb` and `kaggle.ipynb` for data preprocessing, training models, and evaluating the results.
+### 4. Train the Model:
+Train the machine learning model using the **train.csv** dataset. Models such as **Linear Regression**, **Random Forest**, or **Gradient Boosting** can be tested for the best performance.
 
-### 4. Generate Interactive Map:
-Run `highcharter.Rmd` or `yassir.Rmd` in RStudio to generate the interactive map and visualizations.
+### 5. Make Predictions:
+Use the trained model to make predictions on the **test.csv** dataset. Save the predictions in the format provided in **sample_submission.csv**.
 
-### 5. Evaluate KPIs:
-Check the `KPI.Rmd` file for the key performance indicators used to evaluate model performance.
+### 6. Submit the Predictions:
+Submit the predictions to the competition platform (or to the relevant person/team) using the format in **sample_submission.csv**.
 
 ## Conclusion
-
-This project demonstrates the practical application of machine learning and data science techniques in the ride-hailing industry. By using machine learning models and clustering techniques, we were able to accurately predict the price of trips and visualize patterns geographically. The interactive map provides an intuitive way to explore the trip data, while the clustering analysis and KPIs help refine the model’s predictions.
+This project demonstrates how machine learning can be used to predict trip prices for a ride-hailing service like YASSIR VTC. The model can be improved further by tuning hyperparameters and experimenting with different feature engineering techniques.
 
