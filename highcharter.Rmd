@@ -1,0 +1,181 @@
+---
+title: "Hamza Gouaref"
+date: "2024-02-25"
+output: 
+   html_document:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    number_sections: no
+    theme: united
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# visualization
+
+
+```{r include=FALSE}
+library(highcharter)
+library(tidyverse)
+data<-read_csv("live.csv")
+```
+```{r include=FALSE}
+survey18 <-read_csv("survey_results_public.csv")
+```
+
+
+```{r include=FALSE}
+pass<-data.frame(iso2=c("AE","AF","AT","AU","AU",
+                        "BE","BE","BG","BG","BW",
+                        "BY","CA","CA","CH","CH",
+                        "CH","CL","CN","CO","CO",
+                        "CO","CO","CR","CU","CY",
+                        "CZ","DE","DK","EC","EE",
+                        "EG","ES","ES","FR","GB",
+                        "GR","GR","GT","HK","HT",
+                        "HU","ID","IE","IL","IN",
+                        "IR","IR","IR","IS","IS",
+                        "IT","JP","KE","KH","KR",
+                        "LB","LB","LB","LT","LU",
+                        "MX","NL","NO","NP","NZ",
+                        "PE","PH","PL","PT","RO",
+                        "RU","RW","SE","SG","SI",
+                        "SV","SV","TH","TR","TW",
+                        "UA","US","VC","VI","VN"),
+iso3=c("UAE","AFG","ATG","AUS","AUT",
+                        "BEL","BEN","BGR","BGD","BWA",
+                        "BLR","CAN","CAF","CHE","CHL",
+                        "CHN","CHL","CHN","COL","COG",
+                        "COM","COD","CRI","CUB","CYP",
+                        "CZE","DEU","DNK","ECU","EST",
+                        "EGY","ESP","EST","FRA","GBR",
+                        "GRC","GRD","GTM","HKG","HTI",
+                        "HUN","IDN","IRL","ISR","IND",
+                        "IRL","IRQ","IRN","ISL","ISR",
+                        "ITA","JPN","KEN","KHM","KOR",
+                        "LBN","LBY","LBR","LTU","LUX",
+                        "MEX","NLD","NOR","NPL","NZL",
+                        "PER","PHL","PLW","PRT","ROU",
+                        "RUS","RWA","SEN","SGP","SVN",
+                        "SVN","SVK","THA","TUR","TWN",
+                        "UKR","USA","VCT","VIR","VNM"))
+
+```
+
+
+## Bar chart
+```{r echo=FALSE, message=TRUE, warning=FALSE}
+data %>% count(currency) %>%arrange(-n) %>%   hchart('column', hcaes(x = 'currency', y = 'n'))
+```
+
+
+
+```{r echo=FALSE}
+survey18 %>% 
+  filter(!is.na(Employment)) %>% 
+  count(Employment) %>% 
+  hchart('column',hcaes('Employment','n')) %>% 
+  hc_title(text = "Employment Type") %>% 
+  hc_subtitle(text = "Source: Stack Overflow Dev Survey") %>% 
+  hc_add_theme(hc_theme_538())
+
+```
+
+
+## Area chart
+
+```{r echo=FALSE, message=TRUE, warning=FALSE}
+
+survey18%>% 
+  count(YearsCoding, Employment) %>% 
+  hchart('area', hcaes(x = 'YearsCoding', y = 'n', group = "Employment"))
+```
+
+## 3d Bar
+```{r echo=FALSE}
+survey18 %>% 
+  filter(!is.na(Gender)) %>% 
+  filter(Gender %in% c('Male','Female')) %>% 
+  count(Gender) -> Gender
+highchart() %>% 
+  hc_chart(type ="column",
+           options3d = list(enabled = TRUE, beta = 15, alpha = 15)) %>%
+  hc_xAxis(categories = Gender$Gender) %>% 
+  hc_add_series(data = Gender$n, name = "Gender")
+```
+
+## Map chart
+```{r echo=FALSE}
+data(worldgeojson, package = "highcharter")
+
+survey18 %>% 
+  filter(!is.na(Country)) %>% 
+  count(Country) -> countries
+
+highchart() %>%
+hc_add_series_map(worldgeojson, countries, value = "n", joinBy = c('name','Country'))  %>% 
+  #hc_colors(c("darkorange", "darkgray")) %>% 
+    hc_colorAxis(stops = color_stops()) %>% 
+    hc_title(text = "Countries in World Map") %>% 
+    hc_subtitle(text = "by Mohamed Elhilal Tekouk")
+```
+
+```{r echo=FALSE}
+data(worldgeojson, package = "highcharter")
+
+survey18 %>% 
+  filter(!is.na(Country)) %>% 
+  count(Country) -> countries
+
+highchart() %>%
+hc_add_series_map(worldgeojson, countries, value = "n", joinBy = c('name','Country'))  %>% 
+    hc_title(text = "Countries in World Map") %>% 
+    hc_subtitle(text = "by Mohamed Elhilal Tekouk")
+```
+
+## Bar dark mode
+
+```{r echo=FALSE}
+survey18 %>% 
+  filter(!is.na(Employment)) %>% 
+  count(Employment) %>% 
+  hchart('column',hcaes('Employment','n')) %>% 
+  hc_title(text = "Employment Type") %>% 
+  hc_subtitle(text = "Source: Stack Overflow Dev Survey") %>% hc_add_theme(hc_theme_flatdark())
+```
+
+
+## Grouped Spline
+
+```{r echo=FALSE}
+survey18 %>% 
+  count(YearsCoding, Employment) %>% 
+  hchart('spline', hcaes(x = 'YearsCoding', y = 'n', group = "Employment"))
+```
+
+##  Grouped Bar
+
+```{r echo=FALSE}
+survey18 %>% 
+  count(Employment, HopeFiveYears) %>% 
+  hchart('bar', hcaes(x = 'Employment', y = 'n', group = 'HopeFiveYears'))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

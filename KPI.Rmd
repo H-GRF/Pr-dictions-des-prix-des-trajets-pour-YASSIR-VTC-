@@ -1,0 +1,221 @@
+---
+title: "Untitled"
+author: "Hamza Gouaref"
+date: "2024-03-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidymodels)
+library(tidyverse)
+```
+
+```{r}
+train_data <- read_csv("Desktop/train.csv")
+
+```
+
+
+```{r}
+library(dplyr)
+train_data <- train_data %>% mutate(rider_rating= ifelse(is.na(rider_rating), mean(rider_rating, na.rm = TRUE), rider_rating))
+train_data <- train_data %>% mutate(driver_rating= ifelse(is.na(driver_rating), mean(driver_rating, na.rm = TRUE), driver_rating))
+train_data <- train_data %>% mutate(driver_cancel_reason= ifelse(is.na(driver_cancel_reason), mean(driver_cancel_reason, na.rm = TRUE), driver_cancel_reason))
+train_data <- train_data %>% mutate(driver_rating= ifelse(is.na(driver_rating), mean(driver_rating, na.rm = TRUE), driver_rating))
+train_data <- train_data %>% mutate(discount_amount= ifelse(is.na(discount_amount), mean(discount_amount, na.rm = TRUE), discount_amount))
+
+
+```
+
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+
+# Assuming your data frame is named 'train_data'
+# You can load your data using read.csv or any other appropriate function
+# train_data <- read.csv("your_data.csv")
+
+# Assuming your dataframe is called 'your_data'
+#train_data <- replace(train_data, is.na(train_data), 0)
+# Assuming your dataframe is called 'your_data'
+
+
+# Convert date columns to DateTime
+train_data$request_date <- as.POSIXct(train_data$request_date)
+train_data$accepted_date <- as.POSIXct(train_data$accepted_date)
+train_data$started_date <- as.POSIXct(train_data$started_date, format = "%Y-%m-%d %H:%M:%S")
+train_data$trip_finished_date <- as.POSIXct(train_data$trip_finished_date, format = "%Y-%m-%d %H:%M:%S")
+
+# KPIs calculation
+
+# 1. Completion Rate
+completion_rate <- train_data %>%
+  group_by(driver) %>%
+  summarize(completion_rate = sum(trip_status == "FINISHED") / n()) 
+
+# 2. Average Trip Distance
+average_trip_distance <- train_data %>%
+  group_by(driver) %>%
+  summarize(average_trip_distance = mean(trip_distance))
+
+# 3. Acceptance Rate
+acceptance_rate <- train_data %>%
+  group_by(driver) %>%
+  summarize(acceptance_rate = sum(trip_status == "FINISHED") / n())
+
+# 4. Cancellation Rate
+cancellation_rate <- train_data %>%
+  group_by(driver) %>%
+  summarize(cancellation_rate = sum(trip_status == "NOT FINISHED") / n())
+
+# 5. Average Rider Rating
+average_rider_rating <- train_data %>%
+  group_by(driver) %>%
+  summarize(average_rider_rating = mean(rider_rating))
+
+# 6. Average Driver Rating
+average_driver_rating <- train_data %>%
+  group_by(driver) %>%
+  summarize(average_driver_rating = mean(driver_rating))
+
+# 7. On-Time Performance
+on_time_performance <- train_data %>%
+  group_by(driver) %>%
+  summarize(on_time_performance = sum(started_date <= trip_finished_date) / n())
+
+# 8. Usage of Discounts
+usage_of_discounts <- train_data %>%
+  group_by(driver) %>%
+  summarize(usage_of_discounts = sum(used_discount) / n())
+
+# 9. Efficiency in Driver-to-Rider Distance
+efficiency_distance <- train_data %>%
+  group_by(driver) %>%
+  summarize(efficiency_distance = mean(driver2rider_distance))
+
+# Combine the results into a single data frame
+driver_performance <- left_join(completion_rate, average_trip_distance, by = "driver") %>%
+  left_join(acceptance_rate, by = "driver") %>%
+  left_join(cancellation_rate, by = "driver") %>%
+  left_join(average_rider_rating, by = "driver") %>%
+  left_join(average_driver_rating, by = "driver") %>%
+  left_join(on_time_performance, by = "driver") %>%
+  left_join(usage_of_discounts, by = "driver") %>%
+  left_join(efficiency_distance, by = "driver")
+
+# Display the driver_performance data frame
+print(driver_performance)
+```
+
+
+```{r}
+# Rank drivers based on Completion Rate in descending order
+ranked_drivers <- driver_performance %>%
+  arrange(desc(completion_rate)) %>%
+  mutate(rank = row_number())
+
+# Print or view the ranked drivers
+print(ranked_drivers)
+
+```
+
+
+```{r}
+library(ggplot2)
+
+
+# Plot the average trip distance for each driver
+ranked_drivers %>% 
+  arrange(desc(average_trip_distance)) %>%
+  slice_head(n = 10) %>% 
+  ggplot( aes(x = driver, y = average_trip_distance)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Top 10 Drivers with Highest Average Trip Distance",
+       x = "Driver ID",
+       y = "Average Trip Distance") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+```{r}
+# Plot the average trip distance for each driver
+ranked_drivers %>% 
+  arrange(desc(average_driver_rating)) %>%
+  slice_head(n = 10) %>% 
+  ggplot( aes(x = driver, y = average_driver_rating)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Top 10 Drivers with Highest rating",
+       x = "Driver ID",
+       y = "driver_rating") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+
+
+
+
+
+
+```{r}
+merged_data <- ranked_drivers %>%
+  left_join(cities_data, by = "driver")
+
+# Print or view the merged data with destination_city and pickup_city
+print(merged_data)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

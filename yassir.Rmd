@@ -1,0 +1,130 @@
+---
+title: "yassir"
+author: "Hamza Gouaref "
+date: "2024-03-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(tidygeocoder)
+library(tidymodels)
+
+data<-read_csv("hilal/Hackathons/hack\\_enssea_2024/dd/open-data-datathon-2024/train.csv")
+```
+
+
+```{r include=FALSE}
+library(lubridate)
+id<-data %>% 
+  count(driver) %>% 
+  arrange(-n) %>% 
+  .[1:1,] %>% 
+  pull(driver)
+
+data %>% 
+  filter(driver == "yOf6NbYVTVAl") %>% 
+  arrange(request_date) %>% 
+  mutate(month=month(request_date)) %>% 
+  count(month)
+```
+
+
+
+
+
+
+
+
+```{r echo=FALSE}
+library(dplyr)
+library(sf)
+library(leaflet)
+
+sf <- data %>%
+  filter(driver == "yOf6NbYVTVAl") %>%
+  count(pickup_city) %>%
+  arrange(-n) %>%
+  mutate(city_name = pickup_city, n = n) %>%
+  geocode(address = city_name, method = "osm") %>%
+  st_as_sf(coords = c('long', 'lat'), crs = 4326)
+
+sf %>% 
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(popup = ~paste0("City: ", city_name, "<br>Count: ", n))
+
+```
+
+
+
+
+
+```{r echo=FALSE}
+d<-data %>% 
+  count(pickup_city) %>% 
+  arrange(-n) %>% 
+  geocode(address = pickup_city) 
+leaflet(data=d) %>%
+  addTiles() %>%
+  addMarkers(lat=d$lat, lng=d$long, clusterOptions = markerClusterOptions())
+```
+
+
+
+```{r echo=FALSE}
+library(leaflet)
+
+pickup_data<- data %>% 
+  count(pickup_city)
+
+algeria_cities <- raster::getData("GADM", country = "DZ", level = 1)
+
+algeria_cities@data <- merge(algeria_cities@data, pickup_data, by.x = "NAME_1", by.y = "pickup_city", all.x = TRUE) %>% mutate(n = ifelse(is.na(n), 0, n)) 
+
+m <- leaflet(algeria_cities) %>%
+ 
+  addProviderTiles("MapBox", options = providerTileOptions(
+    id = "mapbox.light",
+    accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
+
+
+bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
+pal <- colorBin("YlOrRd", domain = algeria_cities@data$n, bins = bins)
+
+m <- leaflet(algeria_cities) %>%
+  
+  addProviderTiles("MapBox", options = providerTileOptions(
+    id = "mapbox.light",
+    accessToken = Sys.getenv('MAPBOX_ACCESS_TOKEN')))
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g trip",
+  algeria_cities$NL_NAME_1, algeria_cities$n
+) %>% lapply(htmltools::HTML)
+
+m <- m %>% addPolygons(
+  fillColor = ~pal(n),
+  weight = 2,
+  opacity = 1,
+  color = "white",
+  dashArray = "3",
+  fillOpacity = 0.7,
+  highlightOptions = highlightOptions(
+    weight = 5,
+    color = "#666",
+    dashArray = "",
+    fillOpacity = 0.7,
+    bringToFront = TRUE),
+  label = labels,
+  labelOptions = labelOptions(
+    style = list("font-weight" = "normal", padding = "3px 8px"),
+    textsize = "15px",
+    direction = "auto"))
+m %>% addLegend(pal = pal, values = ~n, opacity = 0.7, title = NULL,
+  position = "bottomright")
+
+```
